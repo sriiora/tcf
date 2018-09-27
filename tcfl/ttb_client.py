@@ -706,6 +706,16 @@ def rest_login(args):
                     userid = args.userid
                 userpass = getpass.getpass(
                     "Login to %s as %s\nPassword: " % (rtb._url, userid))
+                if args.keyring:
+                    userpass = keyring.get_password('tcf', userid)
+                    if not userpass:
+                        logger.error(
+                            "Unable to get password from tcf keyring: "
+                            "provision with 'keyring set tcf LOGIN'?")
+                        continue
+                else:
+                    userpass = getpass.getpass(
+                            "Login to %s as %s\nPassword: " % (rtb._url, userid))
             try:
                 if rtb.login(userid, userpass):
                     logged = True

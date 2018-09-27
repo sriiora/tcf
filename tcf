@@ -131,6 +131,9 @@ if __name__ == "__main__":
                     "'TCF_{USER|PASSWORD}_${AKA}'. "
                     "AKA is the short name of the server (defaults to the sole "
                     "host name, without the domain).")
+    ap.add_argument("--no-keyring", action = "store_false", dest = "keyring",
+                    default = True, help = "Disable keyring mode. Don't look "
+                    "up password in `tcf` keyring")
     ap.set_defaults(func = ttb_client.rest_login)
 
     ap = arg_subparsers.add_parser("logout", help = "Logout from the different brokers")
