@@ -568,6 +568,13 @@ class target_c(object):
         #: the targets they request acquired for exclusive use, but in
         #: some cases, it might not be needed (default: True)
         self.acquire = True
+        #: Lock to manipulate the target--when doing state
+        #: modification operations from multiple threads in the same
+        #: testcase, this can be taken to avoid race conditions.
+        #
+        #: Note this only applies mainly to _*set()* operations and
+        #: remember other testcases can't use the target.
+        self.lock = threading.Lock()
 
     @classmethod
     def extension_register(cls, ext_cls, name = None):
