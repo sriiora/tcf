@@ -2622,49 +2622,9 @@ class tc_c(object):
             assert callable(hook_pre), \
                 "tcfl.tc.tc_c.hook_pre contains %s, defined as type '%s', " \
                 "which  is not callable" % type(hook_pre).__name__
+        # see also __init_shallow__()
 
-        #: Keywords for *%(KEY)[sd]* substitution specific to this
-        #: testcase.
-        #:
-        #: Note these do not include values gathered from remote
-        #: targets (as they would collide with each other). Look at
-        #: data:`target.kws <tcfl.tc.target_c.kws>` for that.
-        #:
-        #: These can be used to generate strings based on information,
-        #: as:
-        #:
-        #:   >>>  print "Something %(FIELD)s" % target.kws
-        #:   >>>  target.shcmd_local("cp %(FIELD)s.config final.config")
-        #:
-        #: Fields available:
-        #:
-        #:   - `runid`: string specified by the user that applies to
-        #:     all the testcases
-        #:
-        #:   - `srcdir` and `srcdir_abs`: directory where this
-        #:     testcase was found
-        #:
-        #:   - `thisfile`: file where this testscase as found
-        #:
-        #:   - `tc_hash`: unique four letter ID assigned to this
-        #:     testcase instance. Note that this is the same for all
-        #:     the targets it runs on. A unique ID for each target of
-        #:     the same testcase instance is the field *tg_hash* in the
-        #:     target's keywords :data:`target.kws
-        #:     <tcfl.tc.target_c.kws>` (FIXME: generate, currently
-        #:     only done by app builders)
-        #:
-        self.kws = {}
-        #: Origin of the keyword in self.kws; the values for these are
-        #: lists of places where the setting was set, or re-set
-        self.kws_origin = {}
-	#: For use during execution of phases; testcase drivers can
-        #: store anything they need during the execution of each phase.
-        #: It will be, however, deleted when the phase is completed.
-        self.buffers = {}
-        #: Lock to access :attr:`buffers` safely from multiple threads
-        #: at the same time for the same testcase.
-        self.buffers_lock = threading.Lock()
+        self.__init_shallow__(None)
         self.name = name
         self.kw_set('tc_name', self.name)
         self.kw_set('cwd', os.getcwd())
@@ -2688,9 +2648,6 @@ class tc_c(object):
         #: Group of targets this testcase is being ran on
         self.target_group = None
 
-        # Create a logger
-        self.log = tc_logadapter_c(logging, None)
-
         if os.path.isabs(tc_file_path):
             srcdir = os.path.relpath(os.path.dirname(
                 os.path.abspath(tc_file_path)))
@@ -2707,7 +2664,6 @@ class tc_c(object):
                      os.path.dirname(os.path.abspath(tc_file_path)))
         self._kw_set("thisfile", thisfile)
 
-        self.tls = threading.local()
         #: Expect loop to wait for things to happen
         self.tls.expecter = expecter.expecter_c(self._expecter_log, self,
                                                 poll_period = poll_period,
@@ -2736,9 +2692,6 @@ class tc_c(object):
         # Prefix used for lines that print reports
         self._report_prefix = ""
         self._prefix_update()	# Update the prefix
-
-        # instance specific list of files/paths to wipe at the end
-        self._cleanup_files = set()
 
         #: Result of the last evaluation run
         #:
@@ -2805,6 +2758,72 @@ class tc_c(object):
         # Always before we start, run the site hook
         for hook in self.hook_pre:
             hook(self)
+
+
+    def __init_shallow__(self, other):
+        # Called by clone() to initialize those things that are
+        # different in shallow clones (instances that are almost
+        # identical except for ... a few things)
+
+        #: Lock to access :attr:`buffers` safely from multiple threads
+        #: at the same time for the same testcase.
+        self.lock = threading.Lock()
+
+	#: For use during execution of phases; testcase drivers can
+        #: store anything they need during the execution of each phase.
+        #: It will be, however, deleted when the phase is completed.
+        self.buffers = {}
+        #: Keywords for *%(KEY)[sd]* substitution specific to this
+        #: testcase.
+        #:
+        #: Note these do not include values gathered from remote
+        #: targets (as they would collide with each other). Look at
+        #: data:`target.kws <tcfl.tc.target_c.kws>` for that.
+        #:
+        #: These can be used to generate strings based on information,
+        #: as:
+        #:
+        #:   >>>  print "Something %(FIELD)s" % target.kws
+        #:   >>>  target.shcmd_local("cp %(FIELD)s.config final.config")
+        #:
+        #: Fields available:
+        #:
+        #:   - `runid`: string specified by the user that applies to
+        #:     all the testcases
+        #:
+        #:   - `srcdir` and `srcdir_abs`: directory where this
+        #:     testcase was found
+        #:
+        #:   - `thisfile`: file where this testscase as found
+        #:
+        #:   - `tc_hash`: unique four letter ID assigned to this
+        #:     testcase instance. Note that this is the same for all
+        #:     the targets it runs on. A unique ID for each target of
+        #:     the same testcase instance is the field *tg_hash* in the
+        #:     target's keywords :data:`target.kws
+        #:     <tcfl.tc.target_c.kws>` (FIXME: generate, currently
+        #:     only done by app builders)
+        #:
+        if other:
+            self.kws = dict(other.kws)
+        else:
+            self.kws = dict()
+
+        #: Origin of the keyword in self.kws; the values for these are
+        #: lists of places where the setting was set, or re-set
+        if other:
+            self.kws_origin = dict(other.kws_origin)
+        else:
+            self.kws_origin = dict()
+
+        #: list of files kept as collateral in logdir (to decide if we
+        #: remove later or not)
+        self.collateral = set()
+        self.tls = threading.local()
+        self.log = tc_logadapter_c(logging, None)
+        # instance specific list of files/paths to wipe at the end
+        self._cleanup_files = set()
+
 
     def __thread_init__(self, expecter_parent):
         """
@@ -5486,13 +5505,8 @@ class tc_c(object):
 
         """
         c = copy.copy(self)
-        c.buffers = {}	# For use during execution of actions
-        c.kws = dict(self.kws)
-        c.kws_origin = dict(self.kws_origin)
-        c.log = tc_logadapter_c(logging, None)
+        c.__init_shallow__(self)
         c._prefix_update()
-        c.tls = threading.local()
-        c._cleanup_files = set()
         return c
 
     @result_c.from_exception
