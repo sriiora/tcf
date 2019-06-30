@@ -262,7 +262,9 @@ class shell(tc.target_extension_c):
             testcase.expect_global_append(target.console.text(
                 "ERROR-IN-SHELL", name = "shell error",
                 timeout = 0, poll_period = 1,
-                raise_on_found = tc.error_e("error detected in shell")))
+                raise_on_found = tc.error_e("error detected in shell")),
+                                          skip_duplicate = True
+            )
 
 
     def _run(self, cmd = None, expect = None, prompt_regex = None,
