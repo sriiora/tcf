@@ -753,8 +753,8 @@ EOF
                 # STDERR section
                 output = target.shell.run(
                     "time -p swupd bundle-add %s %s || echo FAILED''-%s"
-                    % (debug, bundle, self.kws['tc_hash']),
-                    output = True, timeout = add_timeout)
+                    % (debug, bundle, self.kws['tc_hash']), output = True,
+                    timeout = add_timeout)
                 if not 'FAILED-%(tc_hash)s' % self.kws in output:
                     # we assume it worked
                     break

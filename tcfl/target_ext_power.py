@@ -37,7 +37,6 @@ class power(tc.target_extension_c):
         self.target.report_info("Powering on", dlevel = 1)
         self.target.rtb.rest_tb_target_power_on(
             self.target.rt, ticket = self.target.ticket)
-        self.target.testcase.tls.expecter.power_on_post(self.target)
         self.target.report_info("Powered on")
 
     def get(self):
@@ -65,7 +64,6 @@ class power(tc.target_extension_c):
         self.target.report_info("Power cycling", dlevel = 1)
         self.target.rtb.rest_tb_target_power_cycle(
             self.target.rt, ticket = self.target.ticket, wait = wait)
-        self.target.testcase.tls.expecter.power_on_post(self.target)
         self.target.report_info("Power cycled")
 
     def reset(self):
@@ -75,5 +73,4 @@ class power(tc.target_extension_c):
         self.target.report_info("Resetting", dlevel = 1)
         self.target.rtb.rest_tb_target_reset(
             self.target.rt, ticket = self.target.ticket)
-        self.target.testcase.tls.expecter.power_on_post(self.target)
         self.target.report_info("Reset")

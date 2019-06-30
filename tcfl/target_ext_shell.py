@@ -203,45 +203,50 @@ class shell(tc.target_extension_c):
         assert timeout > 0
 
         target = self.target
-
+        testcase = target.testcase
+        
         def _login(target):
             # If we have login info, login to get a shell prompt
-            target.expect(login_regex)
+            target.expect(login_regex, name = "login prompt")
             if delay_login:
                 target.report_info("Delaying %ss before login in"
                                    % delay_login)
                 time.sleep(delay_login)
             target.send(user)
             if password:
-                target.expect(password_regex)
+                target.expect(password_regex, name = "password prompt")
                 target.send(password)
 
         try:
-            original_timeout = self.target.testcase.tls.expecter.timeout
-            self.target.testcase.tls.expecter.timeout = timeout
+            original_timeout = testcase.tls.expect_timeout
+            testcase.tls.expect_timeout = timeout
             if tempt:
-                tries = 0
-                while tries < self.target.testcase.tls.expecter.timeout:
+                tries = 3
+                while tries > 0:
                     try:
-                        self.target.send(tempt)
+                        target.send(tempt)
                         if user:
                             _login(self.target)
-                        target.expect(self.linux_prompt_regex)
+                        target.expect(self.shell_prompt_regex,
+                                      timeout = 3, name = "early shell prompt")
                         break
                     except tc.error_e as _e:
-                        if tries == self.target.testcase.tls.expecter.timeout:
+                        if tries == 0:
                             raise tc.error_e(
                                 "Waited too long (%ds) for shell to come up "
                                 "(did not receive '%s')" %
-                                (self.target.testcase.tls.expecter.timeout,
+                                (self.target.testcase.tls.expect_timeout,
                                  self.shell_prompt_regex.pattern))
                         continue
+                    finally:
+                        tries -= 1
             else:
                 if user:
                     _login(self.target)
-                target.expect(self.shell_prompt_regex)
+                target.expect(self.shell_prompt_regex,
+                              name = "early shell prompt")
         finally:
-            self.target.testcase.tls.expecter.timeout = original_timeout
+            testcase.tls.expect_timeout = original_timeout
 
         if shell_setup:
             # 
@@ -254,11 +259,11 @@ class shell(tc.target_extension_c):
             # See that '' in the middle, is so the catcher later doesn't
             # get tripped by the command we sent to set it up
             self.run("trap 'echo ERROR''-IN-SHELL' ERR")
-            self.target.on_console_rx("ERROR-IN-SHELL", result = 'errr',
-                                      timeout = False)
+            testcase.expect_global_append(target.console.text(
+                "ERROR-IN-SHELL", name = "shell error",
+                timeout = 0, poll_period = 1,
+                raise_on_found = tc.error_e("error detected in shell")))
 
-        # Now commands should timeout fast
-        self.target.testcase.tls.expecter.timeout = 30
 
     def _run(self, cmd = None, expect = None, prompt_regex = None,
              output = False, output_filter_crlf = True, trim = False):
@@ -271,6 +276,7 @@ class shell(tc.target_extension_c):
         assert prompt_regex == None \
             or isinstance(prompt_regex, basestring) \
             or isinstance(prompt_regex, re._pattern_type)
+        target = self.target
 
         if output:
             offset = self.target.console.size()
@@ -282,13 +288,13 @@ class shell(tc.target_extension_c):
                 for expectation in expect:
                     assert isinstance(expectation, basestring) \
                         or isinstance(expectation, re._pattern_type)
-                    self.target.expect(expectation)
+                    target.expect(expectation, name = "command output")
             else:
-                self.target.expect(expect)
+                target.expect(expect, name = "command output")
         if prompt_regex == None:
-            self.target.expect(self.shell_prompt_regex)
+            self.target.expect(self.shell_prompt_regex, name = "shell prompt")
         else:
-            self.target.expect(prompt_regex)
+            self.target.expect(prompt_regex, name = "shell prompt")
         if output:
             output = self.target.console.read(offset = offset)
             if output_filter_crlf:
@@ -367,10 +373,10 @@ class shell(tc.target_extension_c):
             "timeout has to be a greater than zero number of seconds " \
             "(got %s)" % timeout
         testcase = self.target.testcase
-        original_timeout = testcase.tls.expecter.timeout
+        original_timeout = testcase.tls.expect_timeout
         try:
             if timeout:
-                testcase.tls.expecter.timeout = timeout
+                testcase.tls.expect_timeout = timeout
             return self._run(
                 cmd = cmd, expect = expect,
                 prompt_regex = prompt_regex,
@@ -378,7 +384,7 @@ class shell(tc.target_extension_c):
                 trim = trim)
         finally:
             if timeout:
-                testcase.tls.expecter.timeout = original_timeout
+                testcase.tls.expect_timeout = original_timeout
 
     def file_remove(self, remote_filename):
         """

@@ -913,11 +913,13 @@ EOF""")
         # Use sh syntax rather than bash's $(</tmp/rsync.pid) to avoid
         # surprises if the shall changes; ideally we'd use killall, but we
         # don't know if it is installed in the POS
-        target.shell.run(
-            # set -b: notify immediatelly so we get the Killed message
-            # and it does not clobber the output of the next command.
-            "set -b; kill -9 `cat /tmp/rsync.pid`",
-            re.compile("Killed +rsync"))
+        # set -b: notify immediatelly so we get the Killed message
+        # and it does not clobber the output of the next command.
+        target.shell.run("set -b")
+        target.send("kill -9 `cat /tmp/rsync.pid`")
+        # this message comes asynchronous, maybe before or after the
+        # prompt...hence why we don't use target.shell.run()
+        target.expect(re.compile("Killed\s+rsync"))
         # remove the runnel we created to the rsync server and the
         # keywords to access it
         target.tunnel.remove(int(target.kws['rsync_port']))
@@ -1073,7 +1075,7 @@ EOF""")
         boot_dev = self._boot_dev_guess(boot_dev)
         with msgid_c("POS"):
 
-            original_timeout = testcase.tls.expecter.timeout
+            original_timeout = testcase.tls.expect_timeout
             original_prompt = target.shell.shell_prompt_regex
             try:
                 # ensure we use the POS prompt
@@ -1198,7 +1200,7 @@ EOF""")
                     % " ".join(reversed(target.pos.umount_list)))
             finally:
                 target.shell.shell_prompt_regex = original_prompt
-                testcase.tls.expecter.timeout = original_timeout
+                testcase.tls.expect_timeout = original_timeout
 
             target.report_info("POS: deployed %(image)s" % kws)
             return kws['image']
