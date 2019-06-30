@@ -239,7 +239,7 @@ class report_console_c(report_c):
 
     def _report_line(self, prefix, key, line_cnt, maxlines,
                      line, alevel, ulevel, maxlines_hit):
-        s = "%s: %s: %s\n" % (prefix, key, line.rstrip())
+        s = u"%s: %s: %s\n" % (prefix, key, line.rstrip())
         if line_cnt < maxlines:
             if line != '':
                 self._report_writer(alevel, s)
@@ -298,9 +298,10 @@ class report_console_c(report_c):
             else:
                 try:
                     for line in attachment:
-                        self._report_line(prefix, key, cnt, maxlines,
-                                          line.rstrip(), alevel, ulevel,
-                                          maxlines_hit)
+                        self._report_line(
+                            prefix, key, cnt, maxlines,
+                            line.encode('utf-8', errors = 'replace').rstrip(),
+                            alevel, ulevel, maxlines_hit)
                 except TypeError as e:
                     self._report_line(prefix, key, 0, maxlines,
                                       "%s\n" % attachment, alevel, ulevel,
@@ -556,7 +557,10 @@ class file_c(report_c):
             for line in attachment.splitlines(False):
                 if line == '':
                     continue
-                self._write(f, u"%s %s: %s\n" % (prefix, key, line.rstrip()))
+                self._write(f, u"%s %s: %s\n" % (
+                    prefix, key,
+                    line.rstrip())
+                )
         elif hasattr(attachment, "name"):
             # Is it a file? reopen it to read so we don't modify the
             # original pointer
@@ -568,7 +572,11 @@ class file_c(report_c):
                     fa.seek(attachment.tell())
                 for line in fa:
                     self._write(
-                        f, u"%s %s: %s\n" % (prefix, key, line.rstrip()))
+                        f, u"%s %s: %s\n" % (
+                            prefix, key,
+                            line.encode('utf-8', errors = 'replace').rstrip()
+                        )
+                    )
         else:
             try:
                 self._write(f, u"%s %s: %s\n" % (prefix, key, attachment))
@@ -673,7 +681,7 @@ class file_c(report_c):
                 if line == "":
                     break
                 # Note this might be we read a "^M" (\r)
-                line = line.rstrip()
+                line = line.encode('utf-8', errors = 'replace').rstrip()
                 if line == "":
                     continue
                 token = line.split(None, 4)
