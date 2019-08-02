@@ -374,7 +374,7 @@ class console(tc.target_extension_c):
         data_report = filter(curses.ascii.isprint, data_report)
         self.target.report_info("writing to console '%s:%s'"
                                 % (self.target.fullid, console_id_name),
-                                dlevel = 1)
+                                dlevel = 2)
         self.target.rtb.rest_tb_target_console_write(
             self.target.rt, console_id, data, ticket = self.target.ticket)
         self.target.report_info("wrote '%s' to console '%s:%s'"
