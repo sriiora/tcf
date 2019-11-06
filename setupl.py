@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -23,7 +23,7 @@ def mk_version_py(base_dir, version):
     """
     with open(os.path.join(base_dir, "version.py"), "w") as f:
         f.write("""\
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -112,8 +112,17 @@ def glob_no_symlinks(pathname):
 
 
 # Find which version string to settle on
+version = None
+try:
+    import tcfl.version
+    version = tcfl.version.version_string
+except:
+    pass
+
 if "VERSION" in os.environ:
     version = os.environ['VERSION']
+elif version:
+    """ already have something """
 else:
     _src = os.path.abspath(__file__)
     _srcdir = os.path.dirname(_src)
@@ -122,8 +131,8 @@ else:
             "git describe --tags --always --abbrev=7 --dirty".split(),
             cwd = _srcdir, stderr = subprocess.PIPE)
         version = git_version.strip()
-        if re.match("^v[0-9]+.[0-9]+", version):
-            version = version[1:]
-    except subprocess.CalledProcessError as _e:
+        if re.match("^v[0-9]+.[0-9]+", version.decode('UTF-8')):
+            version = version[1:].decode('UTF-8')
+    except subprocess.CalledProcessError as e:
         sys.stderr.write("FAILED: git failed: %s" % e.output)
         version = "vNA"

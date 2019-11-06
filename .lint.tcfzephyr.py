@@ -16,6 +16,15 @@ import pprint
 import subprocess
 import tempfile
 
+# from .lint.tcf.py
+# Test cases to run
+# KEY = filename that caused this
+# VALUE = dictionary:
+#  reason (for clarity in messages)
+#  spec (for tcf run -t SPEC )
+#  target (for tcf run TCS)
+tcs = {}
+
 ZEPHYR_BASE = os.environ.get('ZEPHYR_BASE', None)
 ZEPHYR_PATHS = os.environ.get('ZEPHYR_PATHS', "").split()
 

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -12,15 +12,14 @@
 #   rest_tb, as they are target broker specific
 #
 
-import commonl.requirements
-
+from tcfl import commonl
+from tcfl.commonl import requirements
 # Verify that we can run TCF
 commonl.requirements.verify_python_version()
 
 import collections
 import argparse
 import os
-import commonl
 import tcfl.ttb_client as ttb_client
 import tcfl.config
 import tcfl.tc
@@ -167,16 +166,16 @@ if __name__ == "__main__":
         "'zephyr_board and not type:\"^qemu.*\"'")
     arg_parser_target_list.set_defaults(func = ttb_client.rest_target_list)
 
-    ap = arg_subparsers.add_parser(
+    arg_parser_target_acquire = arg_subparsers.add_parser(
         "acquire", help = "Acquire ownership of a target")
-    ap.add_argument(
+    arg_parser_target_acquire.add_argument(
         "target", metavar = "TARGET", action = "store",
         nargs = "+", default = None,
         help = "Target's name or URL")
-    ap.add_argument("-f", "--force", action = "store_true", default = False,
+    arg_parser_target_acquire.add_argument("-f", "--force", action = "store_true", default = False,
                     help = "Force the acquisition, removing the target "
                     "from its current owner (requires admin rights)")
-    ap.set_defaults(func = ttb_client.rest_target_acquire)
+    arg_parser_target_acquire.set_defaults(func = ttb_client.rest_target_acquire)
 
     ap = arg_subparsers.add_parser("enable",
                                    help = "Enable a disabled target")
@@ -499,6 +498,13 @@ if __name__ == "__main__":
     if args.chdir:
         os.chdir(args.chdir)
 
+    # No command specified
+    # Rather than a cryptic error, print usage
+    if 'func' not in args:
+        arg_parser.print_help()
+        retval=1
+        sys.exit(retval)
+
     if args.func == tcfl.tc._run:
         if args.make_jobserver == None:
             # Okie, notice the hack! When doing the 'run' command, we may be
@@ -521,11 +527,11 @@ if __name__ == "__main__":
             with tempfile.NamedTemporaryFile(suffix = '.mk', prefix = 'tcf-',
                                              delete = False) as tf:
                 logd("%s: creating makefile for jobserver run" % tf.name)
-                tf.write("""\
+                tf.write(("""\
 tcf-jobserver-run:
 \t+@%s --make-jobserver=%s %s
 """ % (sys.argv[0], tf.name,
-       join_args_for_make_shell_command(sys.argv[1:])))
+       join_args_for_make_shell_command(sys.argv[1:]))).encode('utf-8'))
                 tf.flush()
                 tf.seek(0)
                 logd("%s: makefile:\n%s" % (tf.name, tf.read()))

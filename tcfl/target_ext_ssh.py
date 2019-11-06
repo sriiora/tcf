@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -13,7 +13,7 @@ Run commands to the target and copy files back and forth using SSH
 import subprocess
 
 import commonl
-import tc
+from . import tc
 
 class ssh(tc.target_extension_c):
     """Extension to :py:class:`tcfl.tc.target_c` for targets that support

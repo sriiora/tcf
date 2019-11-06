@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -10,8 +10,8 @@ Flash the target with *ioc_flash_server_app*
 
 """
 
-import tc
-import ttb_client
+from . import tc
+from . import ttb_client
 
 def _rest_tb_target_ioc_flash_server_app(
         rtb, rt,

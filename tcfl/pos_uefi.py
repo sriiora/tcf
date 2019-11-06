@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -18,9 +18,9 @@ import os
 import pprint
 import re
 
-import tc
-import target_ext_shell
-import tl
+from . import tc
+from . import target_ext_shell
+from . import tl
 
 boot_entries_ignore = [
     # RHEL / Fedora
@@ -275,7 +275,7 @@ def _linux_boot_guess_from_grub_cfg(target, _image):
 
     if len(target._grub_entries) > 1:
         entries = pprint.pformat([ i.__dict__
-                                   for i in target._grub_entries.values() ])
+                                   for i in list(target._grub_entries.values()) ])
         raise tc.blocked_e(
             "more than one Linux kernel entry; I don't know "
             "which one to use",
@@ -284,7 +284,7 @@ def _linux_boot_guess_from_grub_cfg(target, _image):
     if not target._grub_entries:		# can't find?
         del target._grub_entries		# need no more
         return None, None, None
-    entry = target._grub_entries.values()[0]
+    entry = list(target._grub_entries.values())[0]
     del target._grub_entries			# need no more
     # note we assume the grub.cfg entries are in [/mnt]/boot because
     # grub.cfg is in /boot and there is usually a filesystem just for
@@ -335,7 +335,7 @@ def _linux_boot_guess_from_boot(target, image):
         del kernel_versions['default']
 
     if len(kernel_versions) == 1:
-        kver = kernel_versions.keys()[0]
+        kver = list(kernel_versions.keys())[0]
         options = ""
         # image is atuple of (DISTRO, SPIN, VERSION, SUBVERSION, ARCH)
         if distro in ("fedora", "debian", "ubuntu") and 'live' in image:
@@ -446,7 +446,7 @@ def _efibootmgr_output_parse(target, output):
         if _name_is_pos_boot(entry[1]):
             section = 0		# POS (PXE, whatever), boot first
         elif _name_is_tcf_local_boot(entry[1]):
-            section = 05	# TCF local boots, always first so we
+            section = 0o5	# TCF local boots, always first so we
                                 # can control
         elif _name_is_local_boot(entry[1]):
             section = 10	# LOCAL, boot after
@@ -672,7 +672,7 @@ def boot_config_multiroot(target, boot_dev, image):
 
         linux_options += " " + linux_options_append
 
-        for option, value in linux_options_replace.iteritems():
+        for option, value in linux_options_replace.items():
             regex = re.compile(r"\b" + option + r"=\S+")
             if regex.search(linux_options):
                 linux_options = re.sub(

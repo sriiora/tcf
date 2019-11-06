@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -18,6 +18,9 @@ import distutils.command.build_py
 import distutils.command.sdist
 import distutils.core
 import distutils.sysconfig
+
+import setuptools
+from setuptools import setup, find_packages
 
 import setupl
 
@@ -50,20 +53,18 @@ class _build_py(distutils.command.build_py.build_py):
         distutils.command.build_py.build_py.run(self)
 
 
-distutils.core.setup(
+setup(
     name = 'tcf',
     description = "TCF client",
     long_description = """\
 This is the client and meta-testcase runner for the TCF test case framework.
 """,
     version = setupl.version,
-    url = None,
+    url = "https://github.com/intel/tcf",
     author = "Inaky Perez-Gonzalez",
     author_email = "inaky.perez-gonzalez@intel.com",
-    packages = [
-        'commonl',
-        'tcfl',
-    ],
+    license = "Apache-2.0",
+    packages = find_packages(exclude=['build','examples','ttbd']),
     scripts = [ "tcf" ],
     # This is needed so when data is to be installed, our
     # _install_data class is used.
@@ -73,6 +74,8 @@ This is the client and meta-testcase runner for the TCF test case framework.
         install_data = setupl._install_data,
         sdist = _sdist,
     ),
+    package_data = {'': ['LICENSE']},
+    include_package_data=True,
     data_files = [
         # No default configuration files; confusing
         ('@sysconfigdir@/tcf/', [

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -27,7 +27,7 @@ class _01(tcfl.tc.tc_c, unittest.TestCase):
 
     def eval_(self, target):
         # Shall not be able to plug something we don't own
-        with self.assertRaisesRegexp(requests.HTTPError,
+        with self.assertRaisesRegex(requests.HTTPError,
                                      "400: thing1: tried to use "
                                      "non-acquired target"):
             target.thing_plug('thing1')

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -693,7 +693,7 @@ def emsk_add(name = None,
     )
     assert model in zephyr_boards, \
         "Please specify a model (%s) as per the DIP configuration " \
-        "and firmware loaded" % ", ".join(zephyr_boards.keys())
+        "and firmware loaded" % ", ".join(list(zephyr_boards.keys()))
     if serial_port == None:
         serial_port = "/dev/tty-" + name
 
@@ -1758,7 +1758,7 @@ def nrf5x_add(name,
        ``/dev/tty-TARGETNAME``. Follow :ref:`these instructions
        <usb_tty_serial>` using the boards' *serial number*.
     """
-    assert isinstance(family, basestring) \
+    assert isinstance(family, str) \
         and family in [ "nrf51_blenano",
                         "nrf51_pca10028",
                         "nrf52840_pca10056",
@@ -2818,7 +2818,7 @@ class tt_qemu_zephyr(ttbl.tt_qemu.tt_qemu):
     def _slip_power_on_pre(self):
         kws = dict(self.kws)
         # Get fresh values for these keys
-        for key in self.fsdb.keys():
+        for key in list(self.fsdb.keys()):
             if key.startswith("qemu-"):
                 kws[key] = self.fsdb.get(key)
 
@@ -2832,7 +2832,7 @@ class tt_qemu_zephyr(ttbl.tt_qemu.tt_qemu):
             # For each interconnect this thing is hooked up to, we
             # have created an slip-pty-ic_name device in QEMU
             self.qemu_cmdlines[bsp] = self._qemu_cmdlines[bsp]
-            for ic_name, ic_kws in self.tags.get('interconnects', {}).iteritems():
+            for ic_name, ic_kws in self.tags.get('interconnects', {}).items():
                 if not 'ipv4_addr' in ic_kws and not 'ipv6_addr' in ic_kws:
                     continue
 
@@ -2862,7 +2862,7 @@ class tt_qemu_zephyr(ttbl.tt_qemu.tt_qemu):
     def _slip_power_on_post(self):
         kws = dict(self.kws)
         # Get fresh values for these keys
-        for key in self.fsdb.keys():
+        for key in list(self.fsdb.keys()):
             if key.startswith("qemu-"):
                 kws[key] = self.fsdb.get(key)
 
@@ -2873,7 +2873,7 @@ class tt_qemu_zephyr(ttbl.tt_qemu.tt_qemu):
         for bsp in self.bsps:
             # For each interconnect this thing is hooked up to, we
             # have created an slip-pty-ic_name device in QEMU
-            for ic_name, ic_kws in self.tags.get('interconnects', {}).iteritems():
+            for ic_name, ic_kws in self.tags.get('interconnects', {}).items():
                 if not 'ipv4_addr' in ic_kws and not 'ipv6_addr' in ic_kws:
                     continue
                 _kws = dict(kws)
@@ -2937,7 +2937,7 @@ class tt_qemu_zephyr(ttbl.tt_qemu.tt_qemu):
         # started it
         count = 0
         for bsp in self.bsps:
-            for ic_name, ic_kws in self.tags.get('interconnects', {}).iteritems():
+            for ic_name, ic_kws in self.tags.get('interconnects', {}).items():
                 if not 'ipv4_addr' in ic_kws and not 'ipv6_addr' in ic_kws:
                     continue
                 tunslip_pids = self.fsdb.get("tunslip-%s-pid" % bsp)

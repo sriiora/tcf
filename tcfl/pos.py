@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -65,8 +65,8 @@ import Levenshtein
 
 import commonl
 import commonl.yamll
-import tc
-import tl
+from . import tc
+from . import tl
 from . import msgid_c
 
 def image_spec_to_tuple(i):
@@ -101,7 +101,10 @@ def image_list_from_rsync_output(output):
         tokens = line.split(None, 5)
         if len(tokens) != 5:
             continue
-        image = tokens[4]
+        if isinstance(tokens[4], str):
+            image = tokens[4]
+        else:
+            image = tokens[4].decode('UTF-8')
         if not ':' in image:
             continue
         imagel.append(image_spec_to_tuple(image))
@@ -129,7 +132,7 @@ def image_select_best(image, available_images, target):
         target.report_info("POS: available images: %s" % list(available_image),
                            dlevel = 2)
     # filter which images have arch or no arch spec
-    available_images = filter(lambda x: x[4] == arch, available_images)
+    available_images = [x for x in available_images if x[4] == arch]
     if not available_images:
         raise tc.blocked_e(
             "can't find image for architecture %s "
@@ -146,7 +149,7 @@ def image_select_best(image, available_images, target):
     if distro == "":
         distro_images = available_images
     else:
-        distro_images = filter(lambda x: x[0] == distro, available_images)
+        distro_images = [x for x in available_images if x[0] == distro]
     for available_image in distro_images:
         target.report_info("POS: available images (filtered distro %s): %s"
                            % (distro, list(available_image)), dlevel = 2)
@@ -156,7 +159,7 @@ def image_select_best(image, available_images, target):
     if spin == "":
         spin_images = distro_images
     else:
-        spin_images = filter(lambda x: x[1] == spin, distro_images)
+        spin_images = [x for x in distro_images if x[1] == spin]
 
     if not spin_images:
         raise tc.blocked_e(
@@ -181,12 +184,10 @@ def image_select_best(image, available_images, target):
         version = versions[-1]
     else:
         version = distutils.version.LooseVersion(version)
-    version_images = filter(
-        lambda x: (
+    version_images = [x for x in spin_images if (
             distutils.version.LooseVersion(x[2] if x[2] != "" else '0')
             == version
-        ),
-        spin_images)
+        )]
     if not version_images:
         raise tc.blocked_e(
             "can't find image match for version %s "
@@ -211,12 +212,10 @@ def image_select_best(image, available_images, target):
         subversion = subversions[-1]
     else:
         subversion = distutils.version.LooseVersion(subversion)
-    subversion_images = filter(
-        lambda x: (
+    subversion_images = [x for x in version_images if (
             distutils.version.LooseVersion(x[3] if x[3] != "" else '0')
             == subversion
-        ),
-        version_images)
+        )]
     if not subversion_images:
         raise tc.blocked_e(
             "can't find image match for sub-version %s "
@@ -429,10 +428,10 @@ _pos_capable_defaults = dict(
 )
 
 def capability_register(capability, value, fns):
-    assert capability in capability_fns.keys(), \
+    assert capability in list(capability_fns.keys()), \
         "capability %s is not one of: %s" \
-        % (capability, " ".join(capability_fns.keys()))
-    assert isinstance(value, basestring), \
+        % (capability, " ".join(list(capability_fns.keys())))
+    assert isinstance(value, str), \
         "capability value must be a string, got %s" % type(value).__name__
     assert callable(fns) \
         or (
@@ -492,7 +491,7 @@ class extension(tc.target_extension_c):
         target = self.target
         # What is our boot device?
         if boot_dev:
-            assert isinstance(boot_dev, basestring), \
+            assert isinstance(boot_dev, str), \
                 'boot_dev must be a string'
             target.report_info("POS: boot device %s (from arguments)"
                                % boot_dev, dlevel = 4)
@@ -681,8 +680,8 @@ class extension(tc.target_extension_c):
           this target
         :param str boot_dev: device name the system will use to boot
         """
-        assert isinstance(image, basestring)
-        assert isinstance(boot_dev, basestring)
+        assert isinstance(image, str)
+        assert isinstance(boot_dev, str)
 
         mount_fs_fn = self.cap_fn_get("mount_fs")
         return mount_fs_fn(self.target, image, boot_dev)
@@ -836,7 +835,7 @@ EOF""")
             persistent_name = ""
             _persistent_name = os.path.basename(src)
         else:
-            assert isinstance(persistent_name, basestring) \
+            assert isinstance(persistent_name, str) \
                 and not os.path.sep in persistent_name, \
                 "persistent_name  can't be a subdirectory" \
                 " and has to be a string"
@@ -1215,7 +1214,7 @@ EOF""")
         assert isinstance(ic, tc.target_c), \
             "ic must be an instance of tc.target_c, but found %s" \
             % type(ic).__name__
-        assert isinstance(image, basestring)
+        assert isinstance(image, str)
         target = self.target
         testcase = target.testcase
         if not pos_prompt:
@@ -1377,7 +1376,7 @@ def image_seed_match(lp, goal):
     goall = image_spec_to_tuple(str(goal))
     scores = {}
     check_empties = {}
-    for part_name, seed in lp.iteritems():
+    for part_name, seed in lp.items():
         score = 0
         check_empties[part_name] = None
         seedl = image_spec_to_tuple(str(seed))
@@ -1396,7 +1395,7 @@ def image_seed_match(lp, goal):
         else:
             scores[part_name] = 0
     if scores:
-        selected, score = max(scores.iteritems(), key = operator.itemgetter(1))
+        selected, score = max(iter(scores.items()), key = operator.itemgetter(1))
         return selected, score, check_empties[selected], lp[selected]
     return None, 0, None, None
 
@@ -1449,7 +1448,7 @@ def deploy_path(ic, target, _kws, cache = True):
                            dlevel = 2)
         return
 
-    if isinstance(source_path, basestring):
+    if isinstance(source_path, str):
         source_path = [ source_path ]
     elif isinstance(source_path, collections.Iterable):
         pass
@@ -1647,10 +1646,10 @@ class tc_pos_base(tc_pos0_base):
 
 def cmdline_pos_capability_list(args):
     if not args.target:
-        for name, data in capability_fns.iteritems():
-            for value, fn in data.iteritems():
-                print "%s: %s @%s.%s()" % (
-                    name, value, inspect.getsourcefile(fn), fn.__name__)
+        for name, data in capability_fns.items():
+            for value, fn in data.items():
+                print("%s: %s @%s.%s()" % (
+                    name, value, inspect.getsourcefile(fn), fn.__name__))
     else:
         for target in args.target:
             _rtb, rt = tc.ttb_client._rest_target_find_by_id(target)
@@ -1665,14 +1664,14 @@ def cmdline_pos_capability_list(args):
                 if cap_name in unknown_caps:
                     unknown_caps.remove(cap_name)
                 if cap_value:
-                    print"%s.%s: %s @%s.%s" % (
+                    print("%s.%s: %s @%s.%s" % (
                         target, cap_name, cap_value,
-                        inspect.getsourcefile(cap_fn), cap_fn.__name__)
+                        inspect.getsourcefile(cap_fn), cap_fn.__name__))
                 else:
-                    print "%s.%s: NOTDEFINED @n/a" % (target, cap_name)
+                    print("%s.%s: NOTDEFINED @n/a" % (target, cap_name))
             if unknown_caps:
-                print "%s: unknown capabilities defined: %s" % (
-                    target, " ".join(unknown_caps))
+                print("%s: unknown capabilities defined: %s" % (
+                    target, " ".join(unknown_caps)))
 
 def cmdline_setup(argsp):
     ap = argsp.add_parser("pos-capability-list", help = "List available "
@@ -1682,8 +1681,8 @@ def cmdline_setup(argsp):
     ap.set_defaults(func = cmdline_pos_capability_list)
 
 
-import pos_multiroot	# pylint: disable = wrong-import-order,wrong-import-position,relative-import
-import pos_uefi		# pylint: disable = wrong-import-order,wrong-import-position,relative-import
+from . import pos_multiroot	# pylint: disable = wrong-import-order,wrong-import-position,relative-import
+from . import pos_uefi		# pylint: disable = wrong-import-order,wrong-import-position,relative-import
 capability_register('mount_fs', 'multiroot', pos_multiroot.mount_fs)
 capability_register('boot_to_pos', 'pxe', target_power_cycle_to_pos_pxe)
 capability_register('boot_to_normal', 'pxe', target_power_cycle_to_normal_pxe)

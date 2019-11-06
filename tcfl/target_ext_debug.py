@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -10,7 +10,7 @@ Access target's debugging capabilities
 
 """
 
-import tc
+from . import tc
 
 class debug(tc.target_extension_c):
     """

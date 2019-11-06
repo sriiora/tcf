@@ -308,8 +308,8 @@ def _gerrit_feedback(_args, _errors, _warnings, _blockage, message):
         data['labels']['Verified'] = -1
     if _blockage > 0:
         # No verification if missing tools
-        print("W: 'Verified %d' vote skipped as some tools are missing "
-              "and can't check it all" % data['labels']['Verified'])
+        print(("W: 'Verified %d' vote skipped as some tools are missing "
+              "and can't check it all" % data['labels']['Verified']))
         del data['labels']['Verified']
 
     if message and message != "":
@@ -433,7 +433,7 @@ class changedfile_c(object):	# pylint: disable = too-few-public-methods
         # Can't figure out how not to have the colour code show up
         # according to the markdown spec
         # https://gitlab.devtools.intel.com/help/user/markdown#colors
-        print("DEBUG discussions gl_mr id %08x" % id(self.gl_mr))
+        print(("DEBUG discussions gl_mr id %08x" % id(self.gl_mr)))
         self.gl_mr.discussions.create(dict(
             # start a discussion, body of the discussion is whatever
             # this checker said
@@ -762,7 +762,7 @@ for _filename in args.script:
     config_import_file(_filename)
 # Sort on the function name, not on the function file/name/path, so
 # that it is stable to the content of the file
-lint_functions_sorted = sorted(lint_functions.items(), key = lambda x: x[0])
+lint_functions_sorted = sorted(list(lint_functions.items()), key = lambda x: x[0])
 lint_function_names_sorted = [x[0] for x in lint_functions_sorted]
 logging.debug("lint functions: %s", ",".join(lint_function_names_sorted))
 
@@ -789,7 +789,7 @@ class repo_c(git.Repo):
                 line_number_s = ""
         else:
             line_number_s = ""
-        print(line_number_s + message)
+        print((line_number_s + message))
         _context = self.context
         if args.capture and not _context.capturef:
             _context.capturef = open(_context.kws['capture_path'], "w")
@@ -860,7 +860,7 @@ if args.use == 'HEAD':
     logging.info("using head")
     gitrev = str(git_repo.rev_parse('HEAD'))
     commit = next(git_repo.iter_commits())
-    filenames = commit.stats.files.keys()
+    filenames = list(commit.stats.files.keys())
     changedfile_c.gitrev_blame = gitrev
 else:
     logging.info("using work tree")
@@ -1065,7 +1065,7 @@ if args.gitlab_repo:
     changedfile_c.gl_commit = context_c.gl_commit
     context_c.gl_mr = gl_project.mergerequests.get(args.gitlab_mergerequest)
     changedfile_c.gl_mr = context_c.gl_mr
-    print("DEBUG discussions gl_mr id %08x" % id(context_c.gl_mr))
+    print(("DEBUG discussions gl_mr id %08x" % id(context_c.gl_mr)))
 
 else:
     gl = None
@@ -1145,7 +1145,7 @@ if args.gerrit_ssh_host or args.gerrit_from_jenkins:
     sys.exit(0)
 else:
     # Shell usage, returns something to tell what happened
-    print(__file__ + ": " + msg)
+    print((__file__ + ": " + msg))
     if context_global.blockage:
         sys.exit(255)
     if context_global.errors:

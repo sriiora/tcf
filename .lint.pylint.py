@@ -40,8 +40,7 @@ def lint_pylint(repo, cf):	# pylint: disable = too-many-branches
             elif shutil.which('pylint2'):
                 cmdline = [ 'pylint2' ]
         else:
-            # default to pylint-2
-            cmdline = [ 'pylint-2' ]
+            cmdline = [ 'pylint' ]
     rcfile = os.path.join(repo.working_tree_dir, '.pylintrc')
     if os.path.exists(rcfile):
         cmdline.append('--rcfile=' + rcfile)

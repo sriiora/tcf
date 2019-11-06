@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2019 Intel Corporation
 #
@@ -8,7 +8,7 @@
 #
 # pylint: disable = missing-docstring
 
-import urlparse
+import urllib.parse
 
 import ttbl
 import raritan
@@ -106,10 +106,10 @@ class pci(ttbl.tt_power_control_impl): # pylint: disable = abstract-method
 
     """
     def __init__(self, url, outlet_number, https_verify = True):
-        assert isinstance(url, basestring)
+        assert isinstance(url, str)
         assert isinstance(outlet_number, int) and outlet_number > 0
 
-        self.url = urlparse.urlparse(url)
+        self.url = urllib.parse.urlparse(url)
         # note the indexes for the SW are 0-based, while in the labels
         # in the HW for humans, they are 1 based.
         self.outlet_number = outlet_number - 1

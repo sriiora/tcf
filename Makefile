@@ -15,7 +15,7 @@ SPHINXOPTS    = -q -n
 # Why like this? Because the script assumes whichever Python is
 # default and this project is still in v2, so we need to enforce using
 # the Python2 version of sphinx.
-SPHINXBUILD   = python2 -c "import sys, sphinx; sys.exit(sphinx.main(sys.argv))"
+SPHINXBUILD   = python3 -c "import sys, sphinx; sys.exit(sphinx.main(sys.argv))"
 PAPER         =
 BUILDDIR      ?= build
 srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))

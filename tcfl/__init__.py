@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -76,22 +76,23 @@ class msgid_c(object):
 
         # First call, set the root if we have it
         if root:
-            assert isinstance(root, basestring)
+            assert isinstance(root, str)
             self._ident += root
         # that then can be overriden
         if s != None:
-            assert isinstance(s, basestring)
+            if not isinstance(s, str):
+                raise TypeError('expected str, but got {!r}'.format(type(s)))
             if root:
                 self._ident += ":" + s
             else:
                 self._ident += s
         elif s_encode:
-            assert isinstance(s_encode, basestring)
+            assert isinstance(s_encode, str)
             self._ident += self.encode(hashlib.sha256(s_encode).digest(), l)
         else:
-            self._ident += self.generate(l)
+            self._ident += self.generate(l).decode('utf-8')
         if phase:
-            assert isinstance(phase, basestring)
+            assert isinstance(phase, str)
             self._phase = phase
         if depth != None:
             assert isinstance(depth, int)
@@ -108,12 +109,13 @@ class msgid_c(object):
 
     @classmethod
     def encode(cls, s, l):
-        assert isinstance(s, basestring)
+        assert isinstance(s, str)
         assert isinstance(l, int)
         # Instead of +/ we use AZ, even if it removes some key-space,
         # it shall be good enough
-        m = hashlib.sha256(s)
-        return base64.b32encode(m.digest())[:l].lower()
+        m = hashlib.sha256(s.encode('utf-8'))
+        # FIXME: just move this to base32 to use only lowercase
+        return base64.b64encode(bytes(m.digest()), b'AZ')[:l].lower()
 
     @classmethod
     def generate(cls, l = 4):
