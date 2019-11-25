@@ -182,7 +182,7 @@ import requests.exceptions
 
 from . import app
 from . import commonl
-from . import commonl.expr_parser
+import commonl.expr_parser
 from . import expecter
 from . import report
 import tcfl
@@ -3989,7 +3989,7 @@ class tc_c(object, metaclass=_tc_mc):
             for thread in list(threads.values()):
                 r = thread.get()
                 if r[1] != None:	# re-raise thrown exceptions
-                    raise r[1][0], r[1][1], r[1][2]
+                    raise r[1][0](r[1][1]).with_traceback(r[1][2])
                 result += r[0]
             del thread_pool
         return result
