@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -69,7 +69,7 @@ class rly08b(object):
     backend = None
 
     def __init__(self, serial_number):
-        assert isinstance(serial_number, basestring)
+        assert isinstance(serial_number, str)
         self.serial_number = serial_number
 
     def _command(self, cmd, states = None, get_state = False):

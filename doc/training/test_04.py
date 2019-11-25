@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import tcfl.tc
 
 @tcfl.tc.target("zephyr_board", mode = "any")

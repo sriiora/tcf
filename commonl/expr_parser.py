@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 #
 # Copyright (c) 2016 Intel Corporation.
 #
@@ -260,7 +261,7 @@ def ast_expr(ast, env):
     elif ast[0] == "<=":
         return ast_sym_int(ast[1], env) <= int(ast[2])
     elif ast[0] == "in":
-        if isinstance(ast[2], basestring) and ast[2] in env:
+        if isinstance(ast[2], str) and ast[2] in env:
             return ast_sym(ast[1], env) in ast_sym(ast[2], env)
         else:
             return ast_sym(ast[1], env) in ast[2]
@@ -311,7 +312,7 @@ if __name__ == "__main__":
             "A.there in value_dict",
             "A.not_there in value_dict",
     ]:
-        print "\n\nProcessing: ", line
+        print("\n\nProcessing: ", line)
         lex.input(line)
         for tok in iter(lex.token, None):
             print(tok.type, tok.value)

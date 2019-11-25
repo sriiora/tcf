@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -8,7 +8,7 @@
 import contextlib
 import os
 
-import cm_logger
+from . import cm_logger
 import ttbl
 
 # FIXME: move to console/serial or something more consistent
@@ -27,7 +27,7 @@ class cm_serial(ttbl.test_target_console_mixin):
 
     def consoles_close(self):
         # Tell the logger process to stop logging
-        for console in self.consoles.keys():
+        for console in list(self.consoles.keys()):
             logfile_name = os.path.join(self.state_dir,
                                         "console-%s.log" % console)
             cm_logger.spec_rm(logfile_name)
@@ -37,7 +37,7 @@ class cm_serial(ttbl.test_target_console_mixin):
         Open all serial ports assigned to the target
         """
         # Tell the logger process to start logging
-        for console_id in self.consoles.keys():
+        for console_id in list(self.consoles.keys()):
             logfile_name = os.path.join(self.state_dir,
                                         "console-%s.log" % console_id)
             cm_logger.spec_add(logfile_name, self.consoles[console_id])
@@ -46,7 +46,7 @@ class cm_serial(ttbl.test_target_console_mixin):
         """
         Truncate all the logfiles (usually called when running a reset)
         """
-        for console_id in self.consoles.keys():
+        for console_id in list(self.consoles.keys()):
             logfile_name = os.path.join(self.state_dir,
                                         "console-%s.log" % console_id)
             cm_logger.spec_reset(logfile_name)
@@ -134,7 +134,7 @@ class cm_serial(ttbl.test_target_console_mixin):
             else:
                 raise TypeError("Do not know how to handle '%s'" % spec)
         self.tags.setdefault('consoles', [])
-        self.tags['consoles'] += self.consoles.keys()
+        self.tags['consoles'] += list(self.consoles.keys())
         if do_open:
             self.consoles_open()
 
@@ -143,7 +143,7 @@ class cm_serial(ttbl.test_target_console_mixin):
 
     # Console mixin
     def console_do_list(self):
-        return self.consoles.keys()
+        return list(self.consoles.keys())
 
     def console_do_read(self, console_id = None, offset = 0):
         if console_id == None:

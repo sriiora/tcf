@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -26,7 +26,7 @@ import traceback
 import jinja2
 import jinja2.filters
 
-import commonl
+from . import commonl
 import tcfl
 import tcfl.tc
 import tcfl.config
@@ -70,13 +70,13 @@ def _mkutf8(s):
     # I am still so confused by Python's string / unicode / encoding /
     # decoding rules
     #
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s
     elif isinstance(s, str):
         return s.decode('utf-8', errors = 'replace')
     else:
         # represent it in unicode, however the object says
-        return unicode(s)
+        return str(s)
 
 class report_c(object):
     """
@@ -198,8 +198,8 @@ class report_c(object):
         assert isinstance(alevel, int)
         assert isinstance(ulevel, int)
         assert hasattr(_tc, "report_mk_prefix")
-        assert isinstance(tag, basestring)
-        assert isinstance(message, basestring)
+        assert isinstance(tag, str)
+        assert isinstance(message, str)
         if level < 0:
             level = 0
         if alevel < 0:
@@ -227,7 +227,7 @@ class report_console_c(report_c):
     def __init__(self, verbosity, log_dir, log_file = None,
                  verbosity_logf = 999):
         if log_file:
-            assert isinstance(log_file, basestring)
+            assert isinstance(log_file, str)
 
         if log_file != None:
             if os.path.dirname(log_file) == '':
@@ -326,7 +326,7 @@ class report_console_c(report_c):
         maxlines_hit = False
         cnt = 0
         try:
-            if isinstance(attachment, basestring):
+            if isinstance(attachment, str):
                 for line in attachment.splitlines(False):
                     if line == '':
                         cnt += 1
@@ -353,7 +353,7 @@ class report_console_c(report_c):
                 # fails badly.
                 try:
                     for item in attachment:
-                        if isinstance(item, basestring):
+                        if isinstance(item, str):
                             item = item.rstrip()
                         self._report_line(prefix, key, cnt, maxlines,
                                           item, alevel, ulevel,
@@ -376,7 +376,7 @@ class report_console_c(report_c):
             self._report_writer(level, "%s: %s\n" % (_prefix, message))
             if attachments != None:
                 assert isinstance(attachments, dict)
-                for key, attachment in attachments.iteritems():
+                for key, attachment in list(attachments.items()):
                     self._report_f_attachment(alevel, ulevel,
                                               _aprefix, key, attachment)
         sys.stdout.flush()
@@ -589,10 +589,10 @@ class file_c(report_c):
         f.write(_mkutf8(s))
 
     def __init__(self, log_dir):
-        assert isinstance(log_dir, basestring)
+        assert isinstance(log_dir, str)
         assert isinstance(self.templates, dict)
         assert all([ isinstance(template, dict)
-                     for template in self.templates.values() ])
+                     for template in list(self.templates.values()) ])
 
         self.lock = threading.Lock()
         report_c.__init__(self)
@@ -605,13 +605,13 @@ class file_c(report_c):
         """
         Write an attachment to descripror @f
         """
-        if isinstance(attachment, basestring):
+        if isinstance(attachment, str):
             # String
             for line in attachment.splitlines(False):
                 line = _mkutf8(line)
                 if line == '':
                     continue
-                self._write(f, u"%s %s: %s\n" % (prefix, key, line.rstrip()))
+                self._write(f, "%s %s: %s\n" % (prefix, key, line.rstrip()))
         elif hasattr(attachment, "name"):
             # Is it a file? reopen it to read so we don't modify the
             # original pointer
@@ -623,13 +623,13 @@ class file_c(report_c):
                     fa.seek(attachment.tell())
                 for line in fa:
                     self._write(
-                        f, u"%s %s: %s\n" % (prefix, key, line.rstrip()))
+                        f, "%s %s: %s\n" % (prefix, key, line.rstrip()))
         else:
             try:
-                self._write(f, u"%s %s: %s\n" % (prefix, key, attachment))
+                self._write(f, "%s %s: %s\n" % (prefix, key, attachment))
             except TypeError:
                 # FIXME: shouldn't this write about the exception?
-                self._write(f, u"%s %s: [can't represent type %s]\n"
+                self._write(f, "%s %s: [can't represent type %s]\n"
                             % (prefix, key, type(attachment).__name__))
 
     @staticmethod
@@ -701,10 +701,10 @@ class file_c(report_c):
                 # later in mkreport
                 ident = "<snip>"
             _prefix = "%s %d %s%s\t" % (tag, level, ident, tgname)
-            self._write(f, u"%s %s\n" % (_prefix, message))
+            self._write(f, "%s %s\n" % (_prefix, message))
             if attachments != None:
                 assert isinstance(attachments, dict)
-                for key, attachment in attachments.iteritems():
+                for key, attachment in list(attachments.items()):
                     self._report_f_attachment(f, _prefix, key, attachment)
             f.flush()
             # This is an indication that the testcase is done and we
@@ -787,7 +787,7 @@ class file_c(report_c):
             msg_tag, ( None, "BUG-RESULT-%s" % msg_tag))[1]
         kws['message'] = message
         tfids = []
-        for target_want_name, target in _tc.targets.iteritems():
+        for target_want_name, target in list(_tc.targets.items()):
             if len(target.rt.get('bsp_models', {})) > 1:
                 tfids.append(
                     '(' + target.fullid
@@ -811,13 +811,13 @@ class file_c(report_c):
             elif callable(value):
                 continue
             elif any([ isinstance(value, i)
-                       for i in (list, dict, tuple, basestring, int)]):
+                       for i in (list, dict, tuple, str, int)]):
                 kws['tcfl_config_%s' % symbol] = value
             else:
                 pass
 
         kws['targets'] = []
-        for target_want_name, target in _tc.targets.iteritems():
+        for target_want_name, target in list(_tc.targets.items()):
             entry = {}
             entry['want_name'] = target_want_name
             entry['fullid'] = target.fullid
@@ -850,7 +850,7 @@ class file_c(report_c):
         j2_env = jinja2.Environment(
             loader = jinja2.FileSystemLoader(template_path))
         j2_env.filters['xml_escape'] = jinja2_xml_escape
-        for entry_name, template_entry in self.templates.iteritems():
+        for entry_name, template_entry in list(self.templates.items()):
             template_name = template_entry['name']
             if message.startswith("COMPLETION failed") \
                and not template_entry.get('report_fail', True):

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -107,9 +107,9 @@ def qemu_pos_add(target_name,
     """
     if consoles == None or consoles == []:
         consoles = [ 'ttyS0' ]
-    assert isinstance(target_name, basestring)
+    assert isinstance(target_name, str)
     assert isinstance(consoles, list) \
-        and all([ isinstance(console, basestring) for console in consoles ])
+        and all([ isinstance(console, str) for console in consoles ])
     assert len(consoles) >= 1
     assert ram_megs > 0
 
@@ -654,7 +654,7 @@ def nw_default_targets_add(letter, pairs = 5):
     - .100- 255  Real HW targets
 
     """
-    assert isinstance(letter, basestring)
+    assert isinstance(letter, str)
     assert len(letter) == 1
 
     nw_idx = ord(letter)

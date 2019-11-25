@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -10,7 +10,7 @@ Power the target on or off
 
 """
 
-import tc
+from . import tc
 
 class power(tc.target_extension_c):
     """

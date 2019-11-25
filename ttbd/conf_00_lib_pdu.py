@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -13,7 +13,7 @@ Configuration API for PDUs and other power switching equipment
 """
 
 import logging
-import urlparse
+import urllib.parse
 
 def dlwps7_add(hostname, powered_on_start = None,
                user = "admin", password = "1234"):
@@ -261,7 +261,7 @@ try:
 
         Refer to :ref:`ttbl.raritan_emx.pci <raritan_emx_setup>`.
         """
-        _url = urlparse.urlparse(url)
+        _url = urllib.parse.urlparse(url)
         if targetname == None:
             targetname = _url.hostname.split('.')[0]
         for outlet in range(1, outlets + 1):
@@ -452,9 +452,9 @@ def ykush_targets_add(ykush_serial, pc_url, powered_on_start = None):
     re-acquire it to recover.
 
     """
-    assert isinstance(ykush_serial, basestring)
+    assert isinstance(ykush_serial, str)
     if pc_url != None:
-        assert isinstance(pc_url, basestring)
+        assert isinstance(pc_url, str)
     if powered_on_start != None:
         assert isinstance(powered_on_start, bool)
 

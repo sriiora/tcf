@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -16,7 +16,7 @@ import re
 import time
 
 import tcfl.tc
-import target_ext_shell
+from . import target_ext_shell
 
 #! Place where the Zephyr tree is located
 # Note we default to empty string so it can be pased
@@ -77,7 +77,7 @@ def console_dump_on_failure(testcase):
        and not testcase.result_eval.errors \
        and not testcase.result_eval.blocked:
         return
-    for target in testcase.targets.values():
+    for target in list(testcase.targets.values()):
         if not hasattr(target, "console"):
             continue
         if testcase.result_eval.failed:
@@ -163,7 +163,7 @@ def teardown_targets_power_off(testcase):
     you want to keep them on to be able to inspect them.
     """
     assert isinstance(testcase, tcfl.tc.tc_c)
-    for dummy_twn, target  in reversed(list(testcase.targets.iteritems())):
+    for dummy_twn, target  in reversed(list(testcase.targets.items())):
         target.power.off()
 
 def tcpdump_enable(ic):
@@ -200,7 +200,7 @@ def tcpdump_collect(ic, filename = None):
         count)
     """
     assert isinstance(ic, tcfl.tc.target_c)
-    assert filename == None or isinstance(filename, basestring)
+    assert filename == None or isinstance(filename, str)
     if filename == None:
         filename = \
             "report-%(runid)s:%(tc_hash)s" % ic.kws \
@@ -404,7 +404,7 @@ def linux_rsync_cache_lru_cleanup(target, path, max_kbytes):
 
     """
     assert isinstance(target, tcfl.tc.target_c)
-    assert isinstance(path, basestring)
+    assert isinstance(path, str)
     assert max_kbytes > 0
 
     target.report_info(
@@ -650,11 +650,11 @@ def swupd_bundle_add(ic, target, bundle_list,
     # gather parameters / defaults & verify
     assert isinstance(ic, tcfl.tc.target_c)
     assert isinstance(target, tcfl.tc.target_c)
-    if isinstance(bundle_list, basestring):
+    if isinstance(bundle_list, str):
         bundle_list = [ bundle_list ]
     else:
         assert isinstance(bundle_list, collections.Iterable) \
-            and all(isinstance(item, basestring) for item in bundle_list), \
+            and all(isinstance(item, str) for item in bundle_list), \
             "bundle_list must be a string (bundle name) or list " \
             "of bundle names, got a %s" % type(bundle_list).__name__
 
@@ -666,7 +666,7 @@ def swupd_bundle_add(ic, target, bundle_list,
     if url == None:
         url = os.environ.get('SWUPD_URL', None)
     else:
-        assert isinstance(url, basestring)
+        assert isinstance(url, str)
 
     if fix_time == None:
         fix_time = os.environ.get("SWUPD_FIX_TIME", None)

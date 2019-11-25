@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -10,7 +10,7 @@ Copy files from and to the server's user storage area
 
 """
 
-import tc
+from . import tc
 
 class broker_files(tc.target_extension_c):
     """\

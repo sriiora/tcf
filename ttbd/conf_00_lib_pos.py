@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2019 Intel Corporation
 #
@@ -29,7 +29,7 @@ def nw_indexes(nw_name):
       won't be able to route there).
 
     """
-    assert isinstance(nw_name, basestring) \
+    assert isinstance(nw_name, str) \
         and len(nw_name) in [ 1, 2 ] \
         and all(i in string.lowercase + string.uppercase
                 for i in nw_name), \
@@ -169,7 +169,7 @@ def nw_pos_add(nw_name, power_rail = None,
     :returns: the interconect object added
     """
     assert vlan == None or vlan >= 0
-    assert vlan == None or isinstance(mac_addr, basestring)
+    assert vlan == None or isinstance(mac_addr, str)
 
     if power_rail == None:
         power_rail = []
@@ -412,15 +412,15 @@ def pos_target_add(
 
     """
 
-    assert isinstance(name, basestring), \
+    assert isinstance(name, str), \
         "name must be a string; got: %s %s" % (type(name).__name__, name)
-    assert isinstance(mac_addr, basestring), \
+    assert isinstance(mac_addr, str), \
         "mac_addr must be a string HH:HH:HH:HH:HH:HH; got: %s %s" \
         % (type(name).__name__, name)
     assert power_rail \
         and (
             # a single power rail or a char spec of it
-            isinstance(power_rail, (ttbl.tt_power_control_impl, basestring))
+            isinstance(power_rail, (ttbl.tt_power_control_impl, str))
             or (
                 # a power rail list
                 isinstance(power_rail, list)
@@ -428,32 +428,32 @@ def pos_target_add(
                         for i in power_rail))
         ), \
         "power_rail must be a power rail spec, see doc; got %s" % power_rail
-    assert isinstance(boot_disk, basestring) \
+    assert isinstance(boot_disk, str) \
         and not '/' in boot_disk, \
         'boot_disk is the base name of the disk from which ' \
         'the device boots, eg "sda"; got: %s' % boot_disk
-    assert isinstance(partsizes, basestring) \
+    assert isinstance(partsizes, str) \
         and _partsizes_regex.search(partsizes), \
         "partsizes must match %s; got: %s" \
         % (_partsizes_regex.pattern, partsizes)
-    assert isinstance(linux_serial_console, basestring) \
+    assert isinstance(linux_serial_console, str) \
         and _linux_serial_console_regex.search(linux_serial_console), \
         "linux_serial_console must be astring matching %s; got: %s" \
         % (_linux_serial_console_regex.pattern, linux_serial_console)
 
     assert target_type == None \
-        or isinstance(target_type, basestring) \
+        or isinstance(target_type, str) \
         and _target_type_regex.match(target_type), \
         "target_type must match %s; got %s" \
         % (_target_type_regex.pattern, target_type)
     assert target_type_long == None \
-        or isinstance(target_type_long, basestring) \
+        or isinstance(target_type_long, str) \
         and _target_type_long_regex.match(target_type_long), \
         "target_type_long must match %s; got %s" \
         % (_target_type_long_regex.pattern, target_type_long)
     assert index == None or index >= 2 and index < 255, \
         "target index has to be between 2 and 255; got %d" % index
-    assert network == None or isinstance(network, basestring), \
+    assert network == None or isinstance(network, str), \
         "network has to be a string; got %s" % network
         # nw_indexes() does the real checks
     # FIXME: tag verification? done by target_add, but we need a
@@ -486,7 +486,7 @@ def pos_target_add(
     #   be seen when the system is half powered up -- for that we
     #   expect the user to provide the power rail themselves.
     pcl = [ ttbl.cm_serial.pc() ]
-    if isinstance(power_rail, basestring):
+    if isinstance(power_rail, str):
         # legacy support for URLs for dlwps7
         if "@" in power_rail:	# use given user password
             pcl.append(ttbl.pc.dlwps7("http://%s" % power_rail))

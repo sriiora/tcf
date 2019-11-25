@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2019 Intel Corporation
 #
@@ -330,7 +330,7 @@ class _driver(tcfl.pos.tc_pos_base):
         # going to be executed following and they will just report
         # their result individually.
         result = tcfl.tc.result_c()
-        for _, subtc in self.subtc.iteritems():
+        for _, subtc in list(self.subtc.items()):
             result += subtc.result
         # if some sub testcase fails, we want the top level to fail
         return result

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -14,8 +14,8 @@ import time
 
 import requests
 
-import tc
-import ttb_client
+from . import tc
+from . import ttb_client
 
 from . import msgid_c
 

@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -245,14 +245,14 @@ class report_mongodb_c(tcfl.report.report_c):
             # replace periods and starting dollar signs with an
             # underscore.
             domain = attachments['domain']
-            assert isinstance (domain, basestring), \
+            assert isinstance (domain, str), \
                 "data domain name '%s' is a %s, need a string" \
                 % (domain, type(domain).__name__)
             domain = domain.replace(".", "_")
             if domain.startswith("$"):
                 domain = domain.replace("$", "_", 1)
             name = attachments['name']
-            assert isinstance (domain, basestring), \
+            assert isinstance (domain, str), \
                 "data name '%s' is a %s, need a string" \
                 % (name, type(name).__name__)
             name = name.replace(".", "_")
@@ -264,7 +264,7 @@ class report_mongodb_c(tcfl.report.report_c):
         else:
             if attachments:
                 result['attachment'] = {}
-                for key, attachment in attachments.iteritems():
+                for key, attachment in list(attachments.items()):
                     if attachment == None:
                         continue
                     if hasattr(attachment, "name"):

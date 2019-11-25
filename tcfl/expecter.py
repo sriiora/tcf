@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -47,8 +47,8 @@ import traceback
 
 import requests.exceptions
 
-import commonl
-import tc
+from . import commonl
+from . import tc
 import tcfl
 
 class expecter_c(object):

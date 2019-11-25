@@ -762,7 +762,7 @@ for _filename in args.script:
     config_import_file(_filename)
 # Sort on the function name, not on the function file/name/path, so
 # that it is stable to the content of the file
-lint_functions_sorted = sorted(lint_functions.items(), key = lambda x: x[0])
+lint_functions_sorted = sorted(list(lint_functions.items()), key = lambda x: x[0])
 lint_function_names_sorted = [x[0] for x in lint_functions_sorted]
 logging.debug("lint functions: %s", ",".join(lint_function_names_sorted))
 
@@ -860,7 +860,7 @@ if args.use == 'HEAD':
     logging.info("using head")
     gitrev = str(git_repo.rev_parse('HEAD'))
     commit = next(git_repo.iter_commits())
-    filenames = commit.stats.files.keys()
+    filenames = list(commit.stats.files.keys())
     changedfile_c.gitrev_blame = gitrev
 else:
     logging.info("using work tree")

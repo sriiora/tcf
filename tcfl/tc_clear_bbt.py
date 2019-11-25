@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -74,7 +74,7 @@ import re
 import subprocess
 import time
 
-import commonl
+from . import commonl
 import tcfl
 import tcfl.tc
 import tcfl.pos
@@ -671,7 +671,7 @@ EOF
                 "%s: skipped due to configuration "
                 "(tcfl.tc_clear_bbt.ignore_ts or BBT_IGNORE_TS environment)"
                 % rel_file_path)
-            for name, subtc in self.subtc.iteritems():
+            for name, subtc in list(self.subtc.items()):
                 if name.startswith(t_file):
                     subtc.result = tcfl.tc.result_c(0, 0, 0, 0, 1)
                     subtc.data = dict(result = "skipped")
@@ -736,7 +736,7 @@ EOF
             except Exception as e:
                 tcs = dict()
                 result += tcfl.tc.result_c.report_from_exception(self, e)
-            for name, data in tcs.iteritems():
+            for name, data in list(tcs.items()):
                 # get the subtc; see _scan_t_subcases() were we keyed
                 # them in
                 _name = commonl.name_make_safe(name.strip())

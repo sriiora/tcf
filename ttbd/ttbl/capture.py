@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 #
 # Copyright (c) 2017 Intel Corporation
 #
@@ -83,7 +83,7 @@ class impl_c(object):
 
         """
         assert isinstance(target, ttbl.test_target)
-        assert isinstance(capturer, basestring)
+        assert isinstance(capturer, str)
         # must return a dict
 
     def stop_and_get(self, target, capturer):
@@ -104,7 +104,7 @@ class impl_c(object):
           >>> return dict(stream_file = CAPTURE_FILE)
         """
         assert isinstance(target, ttbl.test_target)
-        assert isinstance(capturer, basestring)
+        assert isinstance(capturer, str)
         # must return a dict
 
 
@@ -144,13 +144,13 @@ class interface(ttbl.tt_interface):
         ttbl.tt_interface.__init__(self)
         # Verify arguments
         self.impls = {}
-        for capturer, impl in impls.iteritems():
+        for capturer, impl in list(impls.items()):
             if isinstance(impl, impl_c):
                 if capturer in self.impls:
                     raise AssertionError("capturer '%s' is repeated "
                                          % capturer)
                 self.impls[capturer] = impl
-            elif isinstance(impl, basestring):
+            elif isinstance(impl, str):
                 # synonym
                 if not impl in impls:
                     raise AssertionError(
@@ -173,7 +173,7 @@ class interface(ttbl.tt_interface):
         the needed target aspect (such as adding tags/metadata)
         """
         capturers = []
-        for capturer, impl in self.impls.iteritems():
+        for capturer, impl in list(self.impls.items()):
             ctype = "stream" if impl.stream else "snapshot"
             descr = capturer + ":" + ctype
             if impl.mimetype:
@@ -191,7 +191,7 @@ class interface(ttbl.tt_interface):
           :class:`ttbl.capture.interface`.
         :returns: dictionary of values to pass to the client
         """
-        assert capturer in self.impls.keys(), "capturer %s unknown" % capturer
+        assert capturer in list(self.impls.keys()), "capturer %s unknown" % capturer
         with target.target_owned_and_locked(who):
             impl = self.impls[capturer]
             if impl.stream == False:
@@ -218,7 +218,7 @@ class interface(ttbl.tt_interface):
           :class:`ttbl.capture.interface`.
         :returns: dictionary of values to pass to the client
         """
-        assert capturer in self.impls.keys(), "capturer %s unknown" % capturer
+        assert capturer in list(self.impls.keys()), "capturer %s unknown" % capturer
         with target.target_owned_and_locked(who):
             impl = self.impls[capturer]
             if impl.stream == False:
@@ -240,7 +240,7 @@ class interface(ttbl.tt_interface):
         :param ttbl.test_target target: target on which we are capturing
         """
         res = {}
-        for name, impl in self.impls.iteritems():
+        for name, impl in list(self.impls.items()):
             if impl.stream:
                 capturing = target.property_get("capturer-%s-started"
                                                 % name)
@@ -254,7 +254,7 @@ class interface(ttbl.tt_interface):
 
 
     def _release_hook(self, target, _force):
-        for name, impl in self.impls.iteritems():
+        for name, impl in list(self.impls.items()):
             if impl.stream == True:
                 impl.stop_and_get(target, name)
 
@@ -263,7 +263,7 @@ class interface(ttbl.tt_interface):
         if not 'capturer' in args:
             raise RuntimeError("missing 'capturer' arguments")
         capturer = args['capturer']
-        assert isinstance(capturer, basestring)
+        assert isinstance(capturer, str)
         return capturer
 
 
@@ -453,14 +453,14 @@ class generic_snapshot(impl_c):
     """
     def __init__(self, name, cmdline, mimetype, pre_commands = None,
                  extension = ""):
-        assert isinstance(name, basestring)
-        assert isinstance(cmdline, basestring)
-        assert isinstance(extension, basestring)
+        assert isinstance(name, str)
+        assert isinstance(cmdline, str)
+        assert isinstance(extension, str)
         self.name = name
         self.cmdline = cmdline.split()
         if pre_commands:
             self.pre_commands = pre_commands
-            assert all([ isinstance(command, basestring)
+            assert all([ isinstance(command, str)
                          for command in pre_commands ]), \
                              "list of pre_commands have to be strings"
         else:
@@ -574,15 +574,15 @@ class generic_stream(impl_c):
     """
     def __init__(self, name, cmdline, mimetype,
                  pre_commands = None, wait_to_kill = 1):
-        assert isinstance(name, basestring)
-        assert isinstance(cmdline, basestring)
+        assert isinstance(name, str)
+        assert isinstance(cmdline, str)
         assert wait_to_kill > 0
         self.name = name
         self.cmdline = cmdline.split()
         self.wait_to_kill = wait_to_kill
         if pre_commands:
             self.pre_commands = pre_commands
-            assert all([ isinstance(command, basestring)
+            assert all([ isinstance(command, str)
                          for command in pre_commands ]), \
                              "list of pre_commands have to be strings"
         else:
